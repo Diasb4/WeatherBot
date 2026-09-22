@@ -1,0 +1,25 @@
+{
+  "name": "telegram-weather-bot",
+  "version": "1.0.0",
+  "description": "Красивый Telegram-бот погоды для Vercel с поддержкой инлайн-режима на базе OpenWeatherMap",
+  "main": "api/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node api/index.js",
+    "dev": "node api/index.js"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "weather",
+    "openweathermap",
+    "vercel",
+    "serverless",
+    "inline"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "grammy": "^1.35.0"
+  }
+}
