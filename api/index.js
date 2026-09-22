@@ -259,7 +259,7 @@ bot.command('start', async (ctx) => {
     `• Напиши мне название города в этот чат (например: <code>Москва</code>, <code>Лондон</code>, <code>Токио</code>).`,
     `• Отправь свою геолокацию 📍, чтобы узнать погоду прямо сейчас в твоем месте.`,
     `• Или используй меня <b>в любом чате</b> через инлайн:`,
-    `  <code>@${ctx.me.username} Казань</code>`,
+    `  <code>@${ctx.me?.username || 'bot'} Казань</code>`,
     ``,
     `Нажми кнопку ниже, чтобы попробовать инлайн прямо сейчас! 👇`
   ].join('\n');
@@ -269,13 +269,14 @@ bot.command('start', async (ctx) => {
 
 // Команда /help
 bot.command('help', async (ctx) => {
+  const botUser = ctx.me?.username || 'bot';
   const text = [
     `ℹ️ <b>Справка по боту:</b>`,
     ``,
     `🔹 <b>Инлайн-поиск в любых чатах:</b>`,
     `Просто наберите в поле ввода любого чата:`,
-    `<code>@${ctx.me.username} название_города</code>`,
-    `Например: <code>@${ctx.me.username} Париж</code>`,
+    `<code>@${botUser} название_города</code>`,
+    `Например: <code>@${botUser} Париж</code>`,
     ``,
     `🔹 <b>Команды в чате:</b>`,
     `• <code>/weather &lt;город&gt;</code> или просто напишите название города`,
@@ -701,6 +702,19 @@ function renderDashboardHtml(host, botTokenSet, openWeatherKey) {
 </html>`;
 }
 
+let botInitPromise = null;
+
+async function ensureBotInit() {
+  if (bot.isInited()) return;
+  if (!botInitPromise) {
+    botInitPromise = bot.init().catch((err) => {
+      botInitPromise = null;
+      throw err;
+    });
+  }
+  await botInitPromise;
+}
+
 // ==========================================
 // VERCEL SERVERLESS EXPORT (Default Handler)
 // ==========================================
@@ -757,6 +771,9 @@ export default async function handler(req, res) {
       if (!update || typeof update !== 'object') {
         return res.status(400).send('Bad Request: Invalid update payload');
       }
+
+      // Инициализируем бота перед обработкой (получение botInfo для grammY)
+      await ensureBotInit();
 
       // Передаем обновление в grammY
       await bot.handleUpdate(update);
